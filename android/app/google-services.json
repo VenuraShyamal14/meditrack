@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1010722218162",
+    "firebase_url": "https://notyabaya-iot-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "notyabaya-iot",
+    "storage_bucket": "notyabaya-iot.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010722218162:android:64c67c6eed84a11761e9ab",
+        "android_client_info": {
+          "package_name": "com.example.meditrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1010722218162-u9qtpdov0jn041oivj43j2tv8idve7l9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvttjA1hJRmejChzrhYXE1PPbyc1BzTJY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1010722218162-u9qtpdov0jn041oivj43j2tv8idve7l9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
