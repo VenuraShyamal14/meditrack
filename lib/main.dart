@@ -30,6 +30,15 @@ class _MyHomePageState extends State<MyHomePage> {
   final databaseReference = FirebaseDatabase.instance.reference();
   TextEditingController _textController = TextEditingController();
   String _text = '';
+  late Stream<int> _ledStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _ledStream = databaseReference.child('test/pot_value').onValue.map((event) {
+      return event.snapshot.value as int;
+    });
+  }
 
   void _sendMessage() {
     String message = _textController.text;
@@ -41,12 +50,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void onButton() {
-    DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
     databaseReference.child('test/led').set(1);
   }
 
   void offButton() {
-    DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
     databaseReference.child('test/led').set(0);
   }
 
@@ -54,20 +61,18 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Firebase Realtime Database Demo'),
+        title: Text('MediTrack'),
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center, // Center the content vertically
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: 16), // Add horizontal padding of 16 pixels
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 controller: _textController,
                 decoration: InputDecoration(
-                  labelText: 'Enter your message',
+                  labelText: 'Enter Prescription',
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -80,6 +85,27 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _sendMessage,
               child: Text('Send'),
             ),
+            StreamBuilder<int>(
+  stream: _ledStream,
+  builder: (context, snapshot) {
+    if (snapshot.hasData) {
+      int? ledValue = snapshot.data;
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: TextField(
+          enabled: false,
+          decoration: InputDecoration(
+            labelText: 'Sensor Value',
+          ),
+          controller: TextEditingController(text: ledValue.toString()),
+        ),
+      );
+    } else {
+      return CircularProgressIndicator();
+    }
+  },
+),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -87,8 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: onButton,
                   child: Text('ON'),
                 ),
-                SizedBox(
-                    width: 16), // Add a gap of 16 pixels between the buttons
+                SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: offButton,
                   child: Text('OFF'),
