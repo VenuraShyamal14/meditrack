@@ -167,7 +167,15 @@ void fetchMessages() {
           ],
         ),
       ),
-    );
+      floatingActionButton: FloatingActionButton.small(onPressed: onButton,
+      child: Stack(
+    alignment: Alignment.center,
+    children: const [
+      Icon(Icons.add),
+      
+    ],
+  ),
+    ));
   }
 }
 
