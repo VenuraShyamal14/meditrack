@@ -35,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final databaseReference = FirebaseDatabase.instance.reference();
-  final TextEditingController _textController = TextEditingController();
+  
   late Stream<int> _ledStream;
   List<Message> messages = [];
 
@@ -66,14 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _sendMessage() {
-    String message = _textController.text;
-    _textController.clear();
-
-    databaseReference.child('messages').push().set({
-      'text': message,
-    });
-  }
+  
 
   void onButton() {
     databaseReference.child('test/led').set(1);
@@ -93,22 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _textController,
-                  decoration: const InputDecoration(
-                    labelText: 'Enter Prescription',
-                  ),
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                ),
-              ),
-              ElevatedButton(
-                onPressed: _sendMessage,
-                child: const Text('Send'),
-              ),
               StreamBuilder<int>(
                 stream: _ledStream,
                 builder: (context, snapshot) {
@@ -166,13 +143,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
                         Message message = messages[index];
-                        return ListTile(
-                          title: Text(message.text),
+                        return GestureDetector(
+                          onTap: () {
+                            // Handle individual message tap
+                            // You can access the specific message here
+                            print(message.text);
+                          },
+                          child: ListTile(
+                            title: Text(message.text),
+                          ),
                         );
                       },
                     );
                   } else {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   }
                 },
               )),
@@ -180,7 +164,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         floatingActionButton: FloatingActionButton.small(
-          onPressed: onButton,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PrescriptionPage()),
+            );
+          },
           child: Stack(
             alignment: Alignment.center,
             children: const [
@@ -191,8 +180,64 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+
 class Message {
   final String text;
 
   Message({required this.text});
+}
+
+
+class PrescriptionPage extends StatefulWidget {
+  const PrescriptionPage({super.key});
+
+  @override
+  State<PrescriptionPage> createState() => _PrescriptionPageState();
+}
+
+
+
+class _PrescriptionPageState extends State<PrescriptionPage> {
+
+  final TextEditingController _textController = TextEditingController();
+  final databaseReference = FirebaseDatabase.instance.reference();
+
+  void _sendMessage() {
+    String message = _textController.text;
+    _textController.clear();
+
+    databaseReference.child('messages').push().set({
+      'text': message,
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Prescription Page'),
+      ),
+      body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _textController,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter Prescription',
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _sendMessage,
+                child: const Text('Send'),
+              ),
+            ]
+    ),),);
+  }
 }
