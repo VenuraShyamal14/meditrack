@@ -49,26 +49,22 @@ class _MyHomePageState extends State<MyHomePage> {
     fetchMessages();
   }
 
-
-void fetchMessages() {
-  databaseReference.child('messages').once().then((DatabaseEvent event) {
-    DataSnapshot snapshot = event.snapshot;
-    messages.clear();
-    Map<dynamic, dynamic> values = (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
-    values.forEach((key, value) {
-      Message message = Message(text: value["text"]);
-      messages.add(message);
+  void fetchMessages() {
+    databaseReference.child('messages').once().then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      messages.clear();
+      Map<dynamic, dynamic> values =
+          (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
+      values.forEach((key, value) {
+        Message message = Message(text: value["text"]);
+        messages.add(message);
+      });
+      setState(() {});
+    }).catchError((error) {
+      // Handle error if fetching messages fails
+      print('Error: $error');
     });
-    setState(() {});
-  }).catchError((error) {
-    // Handle error if fetching messages fails
-    print('Error: $error');
-  });
-}
-
-
-
-
+  }
 
   void _sendMessage() {
     String message = _textController.text;
@@ -90,92 +86,108 @@ void fetchMessages() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MediTrack'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                controller: _textController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter Prescription',
-                ),
-                onChanged: (value) {
-                  setState(() {
-                  });
-                },
-              ),
-            ),
-            ElevatedButton(
-              onPressed: _sendMessage,
-              child: const Text('Send'),
-            ),
-            StreamBuilder<int>(
-              stream: _ledStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  int? ledValue = snapshot.data;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      enabled: false,
-                      decoration: const InputDecoration(
-                        labelText: 'Sensor Value',
-                      ),
-                      controller: TextEditingController(text: ledValue.toString()),
-                    ),
-                  );
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: onButton,
-                  child: const Text('ON'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: offButton,
-                  child: const Text('OFF'),
-                ),
-              ],
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  Message message = messages[index];
-                  return ListTile(
-                    title: Text(message.text),
-                    onTap: () {
-                      // Handle individual message tap
-                      // You can access the specific message here
-                      print(message.text);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+        appBar: AppBar(
+          title: const Text('MediTrack'),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.small(onPressed: onButton,
-      child: Stack(
-    alignment: Alignment.center,
-    children: const [
-      Icon(Icons.add),
-      
-    ],
-  ),
-    ));
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _textController,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter Prescription',
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _sendMessage,
+                child: const Text('Send'),
+              ),
+              StreamBuilder<int>(
+                stream: _ledStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    int? ledValue = snapshot.data;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextField(
+                        enabled: false,
+                        decoration: const InputDecoration(
+                          labelText: 'Sensor Value',
+                        ),
+                        controller:
+                            TextEditingController(text: ledValue.toString()),
+                      ),
+                    );
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: onButton,
+                    child: const Text('ON'),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    onPressed: offButton,
+                    child: const Text('OFF'),
+                  ),
+                ],
+              ),
+              Expanded(
+                  child: StreamBuilder<DatabaseEvent>(
+                stream: databaseReference.child('messages').onValue,
+                builder: (BuildContext context,
+                    AsyncSnapshot<DatabaseEvent> snapshot) {
+                  if (snapshot.hasData) {
+                    DataSnapshot dataValues = snapshot.data!.snapshot;
+                    List<Message> messages = [];
+
+                    if (dataValues.value != null) {
+                      Map<dynamic, dynamic> values =
+                          dataValues.value as dynamic;
+                      values.forEach((key, value) {
+                        Message message = Message(text: value['text']);
+                        messages.add(message);
+                      });
+                    }
+
+                    return ListView.builder(
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        Message message = messages[index];
+                        return ListTile(
+                          title: Text(message.text),
+                        );
+                      },
+                    );
+                  } else {
+                    return CircularProgressIndicator();
+                  }
+                },
+              )),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton.small(
+          onPressed: onButton,
+          child: Stack(
+            alignment: Alignment.center,
+            children: const [
+              Icon(Icons.add),
+            ],
+          ),
+        ));
   }
 }
 
