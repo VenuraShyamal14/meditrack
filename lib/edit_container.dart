@@ -44,6 +44,13 @@ void initState() {
           _lunchSelected = values['lunch'] ?? false;
           _dinnerSelected = values['dinner'] ?? false;
           _selectedNumber = values['selectedNumber'] ?? 1;
+          
+          // Retrieve the selected time from the Realtime Database
+          int? hour = values['hour'];
+          int? minute = values['minute'];
+          if (hour != null && minute != null) {
+            _selectedTime = TimeOfDay(hour: hour, minute: minute);
+          }
         });
       }
     }
@@ -55,9 +62,14 @@ void initState() {
 
 
 
-  void _updateMessage() {
+
+void _updateMessage() {
   String updatedMessage = _textController.text;
   String messageKey = widget.message.key;
+
+  // Extract hour and minute from selectedTime if available
+  int? hour = _selectedTime?.hour;
+  int? minute = _selectedTime?.minute;
 
   Map<String, dynamic> updatedData = {
     'text': updatedMessage,
@@ -65,6 +77,8 @@ void initState() {
     'lunch': _lunchSelected,
     'dinner': _dinnerSelected,
     'selectedNumber': _selectedNumber,
+    'hour': hour,
+    'minute': minute,
   };
 
   databaseReference
@@ -77,6 +91,7 @@ void initState() {
     print('Error: $error');
   });
 }
+
 
 
   void _deleteMessage() {
@@ -161,6 +176,7 @@ void initState() {
                     'Selected Time: ${_selectedTime!.format(context)}',
                     style: const TextStyle(fontSize: 18),
                   ),
+                  
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

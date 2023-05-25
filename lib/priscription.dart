@@ -31,7 +31,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Prescription Page'),
+        title: const Text('add data Page'),
       ),
       body: Center(
         child: Column(
@@ -42,7 +42,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
                 child: TextField(
                   controller: _textController,
                   decoration: const InputDecoration(
-                    labelText: 'Enter Prescription',
+                    labelText: 'Enter ',
                   ),
                   onChanged: (value) {
                     setState(() {});
