@@ -58,7 +58,19 @@ class _MyHomePageState extends State<MyHomePage> {
       Map<dynamic, dynamic> values =
           (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
       values.forEach((key, value) {
-        Message message = Message(key: key, text: value["text"]);
+        String text = value["text"];
+        bool morning = value["morning"];
+        bool lunch = value["lunch"];
+        bool dinner = value["dinner"];
+        int selectedNumber = value["selectedNumber"];
+        Message message = Message(
+          key: key,
+          text: text,
+          morning: morning,
+          lunch: lunch,
+          dinner: dinner,
+          selectedNumber: selectedNumber,
+        );
         messages.add(message);
       });
       setState(() {});
@@ -76,89 +88,108 @@ class _MyHomePageState extends State<MyHomePage> {
     databaseReference.child('test/led').set(0);
   }
 
- @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('MediTrack'),
-    ),
-    body: StreamBuilder<DatabaseEvent>(
-      stream: databaseReference.child('messages').onValue,
-      builder: (BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
-        if (snapshot.hasData) {
-          DataSnapshot dataValues = snapshot.data!.snapshot;
-          List<Message> messages = [];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('MediTrack'),
+      ),
+      body: StreamBuilder<DatabaseEvent>(
+        stream: databaseReference.child('messages').onValue,
+        builder: (BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
+          if (snapshot.hasData) {
+            DataSnapshot dataValues = snapshot.data!.snapshot;
+            List<Message> messages = [];
 
-          if (dataValues.value != null) {
-            Map<dynamic, dynamic> values = dataValues.value as Map<dynamic, dynamic>;
-            values.forEach((key, value) {
-              Message message = Message(key: key, text: value['text']);
-              messages.add(message);
-            });
-          }
+            if (dataValues.value != null) {
+              Map<dynamic, dynamic> values =
+                  dataValues.value as Map<dynamic, dynamic>;
+              values.forEach((key, value) {
+                Message message = Message(
+                  key: key,
+                  text: value['text'],
+                  morning: value['morning'],
+                  lunch: value['lunch'],
+                  dinner: value['dinner'],
+                  selectedNumber: value['selectedNumber'],
+                );
+                messages.add(message);
+              });
+            }
 
-          return ListView.builder(
-            itemCount: messages.length,
-            itemBuilder: (context, index) {
-              Message message = messages[index];
-              return InkWell(
-                onTap: () {
-                  // Handle individual message tap
-                  // You can access the specific message here
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditContainer(message),
-                    ),
-                  ).then((_) {
-                    // Refresh messages after returning from the edit screen
-                    fetchMessages();
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white, // Background color
-                    borderRadius: BorderRadius.circular(8.0), // Border radius
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5), // Shadow color
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3), // Shadow offset
+            return ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                Message message = messages[index];
+                return InkWell(
+                  onTap: () {
+                    // Handle individual message tap
+                    // You can access the specific message here
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditContainer(message),
                       ),
-                    ],
+                    ).then((_) {
+                      // Refresh messages after returning from the edit screen
+                      fetchMessages();
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Background color
+                      borderRadius: BorderRadius.circular(8.0), // Border radius
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5), // Shadow color
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3), // Shadow offset
+                        ),
+                      ],
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(
+                          16.0), // Padding around the content
+                      title: Text(message.text),
+                      trailing: const Icon(Icons.edit), // Edit icon
+                    ),
                   ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16.0), // Padding around the content
-                    title: Text(message.text),
-                    trailing: const Icon(Icons.edit), // Edit icon
-                  ),
-                ),
-              );
-            },
+                );
+              },
+            );
+          } else {
+            return const CircularProgressIndicator();
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PrescriptionPage()),
           );
-        } else {
-          return const CircularProgressIndicator();
-        }
-      },
-    ),
-    floatingActionButton: FloatingActionButton.small(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PrescriptionPage()),
-        );
-      },
-      child: const Icon(Icons.add),
-    ),
-  );
-}
-
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
 }
 
 class Message {
   final String key;
   final String text;
+  final bool morning;
+  final bool lunch;
+  final bool dinner;
+  final int selectedNumber;
 
-  Message({required this.key, required this.text});
+  Message({
+    required this.key,
+    required this.text,
+    required this.morning,
+    required this.lunch,
+    required this.dinner,
+    required this.selectedNumber,
+  });
 }
