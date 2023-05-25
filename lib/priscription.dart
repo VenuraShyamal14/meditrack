@@ -24,6 +24,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
     databaseReference.child('messages').push().set({
       'text': message,
     });
+    Navigator.pop(context);
   }
 
   @override

@@ -76,126 +76,84 @@ class _MyHomePageState extends State<MyHomePage> {
     databaseReference.child('test/led').set(0);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('MediTrack'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            StreamBuilder<int>(
-              stream: _ledStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  int? ledValue = snapshot.data;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      enabled: false,
-                      decoration: const InputDecoration(
-                        labelText: 'Sensor Value',
-                      ),
-                      controller: TextEditingController(text: ledValue.toString()),
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('MediTrack'),
+    ),
+    body: StreamBuilder<DatabaseEvent>(
+      stream: databaseReference.child('messages').onValue,
+      builder: (BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
+        if (snapshot.hasData) {
+          DataSnapshot dataValues = snapshot.data!.snapshot;
+          List<Message> messages = [];
+
+          if (dataValues.value != null) {
+            Map<dynamic, dynamic> values = dataValues.value as Map<dynamic, dynamic>;
+            values.forEach((key, value) {
+              Message message = Message(key: key, text: value['text']);
+              messages.add(message);
+            });
+          }
+
+          return ListView.builder(
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              Message message = messages[index];
+              return InkWell(
+                onTap: () {
+                  // Handle individual message tap
+                  // You can access the specific message here
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditContainer(message),
                     ),
-                  );
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: onButton,
-                  child: const Text('ON'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: offButton,
-                  child: const Text('OFF'),
-                ),
-              ],
-            ),
-            Expanded(
-              child: StreamBuilder<DatabaseEvent>(
-                stream: databaseReference.child('messages').onValue,
-                builder: (BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
-                  if (snapshot.hasData) {
-                    DataSnapshot dataValues = snapshot.data!.snapshot;
-                    List<Message> messages = [];
-
-                    if (dataValues.value != null) {
-                      Map<dynamic, dynamic> values = dataValues.value as Map<dynamic, dynamic>;
-                      values.forEach((key, value) {
-                        Message message = Message(key: key, text: value['text']);
-                        messages.add(message);
-                      });
-                    }
-
-                    return ListView.builder(
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        Message message = messages[index];
-                        return InkWell(
-                          onTap: () {
-                            // Handle individual message tap
-                            // You can access the specific message here
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditContainer(message),
-                              ),
-                            ).then((_) {
-                              // Refresh messages after returning from edit screen
-                              fetchMessages();
-                            });
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white, // Background color
-                              borderRadius: BorderRadius.circular(8.0), // Border radius
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5), // Shadow color
-                                  spreadRadius: 2,
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 3), // Shadow offset
-                                ),
-                              ],
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(16.0), // Padding around the content
-                              title: Text(message.text),
-                              trailing: const Icon(Icons.edit), // Edit icon
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
+                  ).then((_) {
+                    // Refresh messages after returning from the edit screen
+                    fetchMessages();
+                  });
                 },
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PrescriptionPage()),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Background color
+                    borderRadius: BorderRadius.circular(8.0), // Border radius
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5), // Shadow color
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3), // Shadow offset
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16.0), // Padding around the content
+                    title: Text(message.text),
+                    trailing: const Icon(Icons.edit), // Edit icon
+                  ),
+                ),
+              );
+            },
           );
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+        } else {
+          return const CircularProgressIndicator();
+        }
+      },
+    ),
+    floatingActionButton: FloatingActionButton.small(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PrescriptionPage()),
+        );
+      },
+      child: const Icon(Icons.add),
+    ),
+  );
+}
+
 }
 
 class Message {
