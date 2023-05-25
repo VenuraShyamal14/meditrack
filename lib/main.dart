@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import 'priscription.dart';
+import 'edit_container.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -11,7 +14,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +29,15 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   final databaseReference = FirebaseDatabase.instance.reference();
-  
+
   late Stream<int> _ledStream;
   List<Message> messages = [];
 
@@ -56,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Map<dynamic, dynamic> values =
           (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
       values.forEach((key, value) {
-        Message message = Message(text: value["text"]);
+        Message message = Message(key: key, text: value["text"]);
         messages.add(message);
       });
       setState(() {});
@@ -65,8 +67,6 @@ class _MyHomePageState extends State<MyHomePage> {
       print('Error: $error');
     });
   }
-
-  
 
   void onButton() {
     databaseReference.child('test/led').set(1);
@@ -79,62 +79,59 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('MediTrack'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              StreamBuilder<int>(
-                stream: _ledStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    int? ledValue = snapshot.data;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: TextField(
-                        enabled: false,
-                        decoration: const InputDecoration(
-                          labelText: 'Sensor Value',
-                        ),
-                        controller:
-                            TextEditingController(text: ledValue.toString()),
+      appBar: AppBar(
+        title: const Text('MediTrack'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            StreamBuilder<int>(
+              stream: _ledStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  int? ledValue = snapshot.data;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      enabled: false,
+                      decoration: const InputDecoration(
+                        labelText: 'Sensor Value',
                       ),
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                },
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: onButton,
-                    child: const Text('ON'),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: offButton,
-                    child: const Text('OFF'),
-                  ),
-                ],
-              ),
-              Expanded(
-                  child: StreamBuilder<DatabaseEvent>(
+                      controller: TextEditingController(text: ledValue.toString()),
+                    ),
+                  );
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: onButton,
+                  child: const Text('ON'),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: offButton,
+                  child: const Text('OFF'),
+                ),
+              ],
+            ),
+            Expanded(
+              child: StreamBuilder<DatabaseEvent>(
                 stream: databaseReference.child('messages').onValue,
-                builder: (BuildContext context,
-                    AsyncSnapshot<DatabaseEvent> snapshot) {
+                builder: (BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
                   if (snapshot.hasData) {
                     DataSnapshot dataValues = snapshot.data!.snapshot;
                     List<Message> messages = [];
 
                     if (dataValues.value != null) {
-                      Map<dynamic, dynamic> values =
-                          dataValues.value as dynamic;
+                      Map<dynamic, dynamic> values = dataValues.value as Map<dynamic, dynamic>;
                       values.forEach((key, value) {
-                        Message message = Message(text: value['text']);
+                        Message message = Message(key: key, text: value['text']);
                         messages.add(message);
                       });
                     }
@@ -143,14 +140,38 @@ class _MyHomePageState extends State<MyHomePage> {
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
                         Message message = messages[index];
-                        return GestureDetector(
+                        return InkWell(
                           onTap: () {
                             // Handle individual message tap
                             // You can access the specific message here
-                            print(message.text);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditContainer(message),
+                              ),
+                            ).then((_) {
+                              // Refresh messages after returning from edit screen
+                              fetchMessages();
+                            });
                           },
-                          child: ListTile(
-                            title: Text(message.text),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white, // Background color
+                              borderRadius: BorderRadius.circular(8.0), // Border radius
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5), // Shadow color
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3), // Shadow offset
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(16.0), // Padding around the content
+                              title: Text(message.text),
+                              trailing: const Icon(Icons.edit), // Edit icon
+                            ),
                           ),
                         );
                       },
@@ -159,85 +180,27 @@ class _MyHomePageState extends State<MyHomePage> {
                     return const CircularProgressIndicator();
                   }
                 },
-              )),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
-        floatingActionButton: FloatingActionButton.small(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const PrescriptionPage()),
-            );
-          },
-          child: Stack(
-            alignment: Alignment.center,
-            children: const [
-              Icon(Icons.add),
-            ],
-          ),
-        ));
+      ),
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PrescriptionPage()),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 }
-
 
 class Message {
+  final String key;
   final String text;
 
-  Message({required this.text});
-}
-
-
-class PrescriptionPage extends StatefulWidget {
-  const PrescriptionPage({super.key});
-
-  @override
-  State<PrescriptionPage> createState() => _PrescriptionPageState();
-}
-
-
-
-class _PrescriptionPageState extends State<PrescriptionPage> {
-
-  final TextEditingController _textController = TextEditingController();
-  final databaseReference = FirebaseDatabase.instance.reference();
-
-  void _sendMessage() {
-    String message = _textController.text;
-    _textController.clear();
-
-    databaseReference.child('messages').push().set({
-      'text': message,
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Prescription Page'),
-      ),
-      body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _textController,
-                  decoration: const InputDecoration(
-                    labelText: 'Enter Prescription',
-                  ),
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                ),
-              ),
-              ElevatedButton(
-                onPressed: _sendMessage,
-                child: const Text('Send'),
-              ),
-            ]
-    ),),);
-  }
+  Message({required this.key, required this.text});
 }
