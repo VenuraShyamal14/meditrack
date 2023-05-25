@@ -24,7 +24,7 @@ class _EditContainerState extends State<EditContainer> {
 
   void _updateMessage() {
     String updatedMessage = _textController.text;
-    String messageKey = widget.message.key!;
+    String messageKey = widget.message.key;
 
     databaseReference
         .child('messages')
@@ -38,6 +38,20 @@ class _EditContainerState extends State<EditContainer> {
       print('Error: $error');
     });
   }
+
+void _deleteMessage() {
+  String messageKey = widget.message.key;
+
+  databaseReference.child('messages').child(messageKey).remove().then((_) {
+    // Navigate back to the previous page
+    Navigator.pop(context);
+  }).catchError((error) {
+    // Handle error if deleting message fails
+    print('Error: $error');
+  });
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +75,27 @@ class _EditContainerState extends State<EditContainer> {
                 },
               ),
             ),
-            ElevatedButton(
-              onPressed: _updateMessage,
-              child: const Text('SAVE'),
-            ),
+            Row(
+  children: [
+    const SizedBox(width: 50), // Add spacing
+    Expanded(
+      
+      child: ElevatedButton(
+        onPressed: _updateMessage,
+        child: const Text('SAVE'),
+      ),
+    ),
+    const SizedBox(width: 50), // Add spacing between the buttons
+    Expanded(
+      child: ElevatedButton(
+        onPressed: _deleteMessage,
+        child: const Text('DELETE'),
+      ), 
+    ),
+    const SizedBox(width: 50), // Add spacing
+  ],
+)
+
           ],
         ),
       ),
