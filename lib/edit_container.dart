@@ -24,11 +24,36 @@ class _EditContainerState extends State<EditContainer> {
   bool _lunchSelected = false;
   bool _dinnerSelected = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _textController = TextEditingController(text: widget.message.text);
-  }
+@override
+void initState() {
+  super.initState();
+  _textController = TextEditingController(text: widget.message.text);
+
+  // Fetch current values from the Realtime Database
+  databaseReference
+      .child('messages')
+      .child(widget.message.key)
+      .once()
+      .then((DatabaseEvent snapshot) {
+    DataSnapshot data = snapshot.snapshot;
+    if (data.value != null) {
+      Map<dynamic, dynamic>? values = data.value as Map<dynamic, dynamic>?;
+      if (values != null) {
+        setState(() {
+          _morningSelected = values['morning'] ?? false;
+          _lunchSelected = values['lunch'] ?? false;
+          _dinnerSelected = values['dinner'] ?? false;
+          _selectedNumber = values['selectedNumber'] ?? 1;
+        });
+      }
+    }
+  }).catchError((error) {
+    print('Error: $error');
+  });
+}
+
+
+
 
   void _updateMessage() {
   String updatedMessage = _textController.text;
@@ -101,6 +126,7 @@ class _EditContainerState extends State<EditContainer> {
       ),
     );
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -205,5 +231,7 @@ class _EditContainerState extends State<EditContainer> {
         ),
       ),
     );
+    
   }
+  
 }
