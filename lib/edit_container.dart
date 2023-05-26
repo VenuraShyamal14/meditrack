@@ -215,7 +215,7 @@ void _updateMessage() {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _showNumberPicker,
-                  child: const Text('SELECT NUMBER'),
+                  child: const Text('SELECT NUMBER OF PILLS'),
                 ),
                 const SizedBox(height: 16),
                 Text(
