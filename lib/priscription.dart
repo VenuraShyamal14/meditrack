@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:numberpicker/numberpicker.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+User? _user;
 
 class PrescriptionPage extends StatefulWidget {
   const PrescriptionPage({Key? key}) : super(key: key);
@@ -59,7 +62,20 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
     );
   }
 
+  Future<void> signIn() async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: 'shamalbandara14@gmail.com',
+        password: '12345678',
+      );
+    } on FirebaseAuthException catch (e) {
+      // Handle authentication errors here
+      print('Failed to sign in: $e');
+    }
+  }
+
   void _saveMessage() {
+    signIn();
     String newMessage = _textController.text;
 
     int? hour = _selectedTime?.hour;
