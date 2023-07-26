@@ -24,43 +24,74 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
   bool _lunchSelected = false;
   bool _dinnerSelected = false;
 
-  void _selectTime() async {
-    final TimeOfDay? time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
+void _selectTime() async {
+  final TimeOfDay? time = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+    builder: (BuildContext context, Widget? child) {
+      return MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      );
+    },
+    initialEntryMode: TimePickerEntryMode.dial, // Set to dial for 24-hour clock
+  );
 
-    if (time != null) {
-      setState(() {
-        _selectedTime = time;
-      });
-    }
+  if (time != null) {
+    setState(() {
+      _selectedTime = time;
+    });
   }
+}
 
-  void _showNumberPicker() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select a Number'),
-        content: NumberPicker(
-          minValue: 1,
-          maxValue: 10,
-          value: _selectedNumber,
-          onChanged: (value) {
-            setState(() {
-              _selectedNumber = value;
-            });
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
+
+void _showNumberPicker() {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Select a Number'),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: () {
+                    setState(() {
+                      _selectedNumber = (_selectedNumber - 1).clamp(1, 10);
+                    });
+                  },
+                ),
+                Text(
+                  '$_selectedNumber',
+                  style: TextStyle(fontSize: 24),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    setState(() {
+                      _selectedNumber = (_selectedNumber + 1).clamp(1, 10);
+                    });
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+
 
   Future<void> signIn() async {
     try {
@@ -130,41 +161,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
                     style: const TextStyle(fontSize: 18),
                   ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: _morningSelected,
-                      onChanged: (value) {
-                        setState(() {
-                          _morningSelected = value!;
-                        });
-                      },
-                    ),
-                    const Text('Morning'),
-                    const SizedBox(width: 16),
-                    Checkbox(
-                      value: _lunchSelected,
-                      onChanged: (value) {
-                        setState(() {
-                          _lunchSelected = value!;
-                        });
-                      },
-                    ),
-                    const Text('Lunch'),
-                    const SizedBox(width: 16),
-                    Checkbox(
-                      value: _dinnerSelected,
-                      onChanged: (value) {
-                        setState(() {
-                          _dinnerSelected = value!;
-                        });
-                      },
-                    ),
-                    const Text('Dinner'),
-                  ],
-                ),
-                const SizedBox(height: 16),
+               
                 ElevatedButton(
                   onPressed: _showNumberPicker,
                   child: const Text('SELECT NUMBER OF PILLS'),
