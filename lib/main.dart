@@ -41,6 +41,15 @@ class _MyHomePageState extends State<MyHomePage> {
   late Stream<int> _ledStream;
   List<Message> messages = [];
 
+
+  //bottom nav
+  int _currentIndex = 1;
+  final List<Widget> _screens = [
+    Screen1(),
+    Screen2(),
+    Screen3(),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -87,12 +96,126 @@ class _MyHomePageState extends State<MyHomePage> {
   void offButton() {
     databaseReference.child('test/led').set(0);
   }
+  
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PrescriptionPage()),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (int index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.edit),
+            label: 'Edit',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+      ),
+    );
+  }
+}
+  
+      
+
+
+class Message {
+
+  final String key;
+  final String text;
+  final bool morning;
+  final bool lunch;
+  final bool dinner;
+  final int selectedNumber;
+
+  Message({
+    required this.key,
+    required this.text,
+    required this.morning,
+    required this.lunch,
+    required this.dinner,
+    required this.selectedNumber,
+  });
+}
+
+
+
+class Screen1 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Screen 1'),
+      ),
+      body: Center(
+        child: Text('This is Screen 1'),
+      ),
+    );
+  }
+}
+
+class Screen2 extends StatelessWidget {
+  final DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
+  List<Message> messages = [];
+  void fetchMessages() {
+    // Your existing fetchMessages() function
+    // ...
+
+    databaseReference.child('messages').once().then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      messages.clear();
+      Map<dynamic, dynamic> values =
+          (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
+      values.forEach((key, value) {
+        String text = value["text"];
+        bool morning = value["morning"];
+        bool lunch = value["lunch"];
+        bool dinner = value["dinner"];
+        int selectedNumber = value["selectedNumber"];
+        Message message = Message(
+          key: key,
+          text: text,
+          morning: morning,
+          lunch: lunch,
+          dinner: dinner,
+          selectedNumber: selectedNumber,
+        );
+        messages.add(message);
+      });
+      
+    }).catchError((error) {
+      // Handle error if fetching messages fails
+      print('Error: $error');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MediTrack'),
+        title: Text('Screen 2'),
       ),
       body: StreamBuilder<DatabaseEvent>(
         stream: databaseReference.child('messages').onValue,
@@ -102,8 +225,7 @@ class _MyHomePageState extends State<MyHomePage> {
             List<Message> messages = [];
 
             if (dataValues.value != null) {
-              Map<dynamic, dynamic> values =
-                  dataValues.value as Map<dynamic, dynamic>;
+              Map<dynamic, dynamic> values = dataValues.value as Map<dynamic, dynamic>;
               values.forEach((key, value) {
                 Message message = Message(
                   key: key,
@@ -149,8 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                     child: ListTile(
-                      contentPadding: const EdgeInsets.all(
-                          16.0), // Padding around the content
+                      contentPadding: const EdgeInsets.all(16.0), // Padding around the content
                       title: Text(message.text),
                       trailing: const Icon(Icons.edit), // Edit icon
                     ),
@@ -159,37 +280,27 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
           } else {
-            return const CircularProgressIndicator();
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           }
         },
-      ),
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PrescriptionPage()),
-          );
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
-class Message {
-  final String key;
-  final String text;
-  final bool morning;
-  final bool lunch;
-  final bool dinner;
-  final int selectedNumber;
-
-  Message({
-    required this.key,
-    required this.text,
-    required this.morning,
-    required this.lunch,
-    required this.dinner,
-    required this.selectedNumber,
-  });
+class Screen3 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Screen 3'),
+      ),
+      body: Center(
+        child: Text('This is Screen 3'),
+      ),
+    );
+  }
 }
+
