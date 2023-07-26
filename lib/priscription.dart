@@ -13,85 +13,134 @@ class PrescriptionPage extends StatefulWidget {
   State<PrescriptionPage> createState() => _PrescriptionPageState();
 }
 
+class ContainerRow extends StatefulWidget {
+  final String containerName;
+
+  ContainerRow({required this.containerName});
+
+  @override
+  State<ContainerRow> createState() => _ContainerRowState();
+}
+
+class _ContainerRowState extends State<ContainerRow> {
+  int _selectedNumber = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            widget.containerName,
+            style: TextStyle(fontSize: 20),
+          ),
+        ),
+        SizedBox(width: 16),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Icons.remove),
+              onPressed: () {
+                setState(() {
+                  _selectedNumber = (_selectedNumber - 1).clamp(0, 10);
+                });
+              },
+            ),
+            Text(
+              '$_selectedNumber',
+              style: TextStyle(fontSize: 24),
+            ),
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                setState(() {
+                  _selectedNumber = (_selectedNumber + 1).clamp(0, 10);
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 class _PrescriptionPageState extends State<PrescriptionPage> {
   final TextEditingController _textController = TextEditingController();
   final databaseReference = FirebaseDatabase.instance.reference();
 
   TimeOfDay? _selectedTime;
-  int _selectedNumber = 1;
+  int _selectedNumber = 0;
 
   bool _morningSelected = false;
   bool _lunchSelected = false;
   bool _dinnerSelected = false;
 
-void _selectTime() async {
-  final TimeOfDay? time = await showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.now(),
-    builder: (BuildContext context, Widget? child) {
-      return MediaQuery(
-        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-        child: child!,
-      );
-    },
-    initialEntryMode: TimePickerEntryMode.dial, // Set to dial for 24-hour clock
-  );
+  // List of container names
+  List<String> containerNames = [
+    'container1',
+    'container2',
+    'container3',
+    'container4',
+    'container5',
+    'container6',
+    'container7',
+    'container8',
+  ];
 
-  if (time != null) {
-    setState(() {
-      _selectedTime = time;
-    });
+  // Function to build each row
+  Widget buildContainerRow(String containerName) {
+    return ContainerRow(containerName: containerName);
   }
-}
 
+  void _selectTime() async {
+    final TimeOfDay? time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+      initialEntryMode: TimePickerEntryMode.dial, // Set to dial for 24-hour clock
+    );
 
-void _showNumberPicker() {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Select a Number'),
-            content: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.remove),
-                  onPressed: () {
-                    setState(() {
-                      _selectedNumber = (_selectedNumber - 1).clamp(1, 10);
-                    });
-                  },
-                ),
-                Text(
-                  '$_selectedNumber',
-                  style: TextStyle(fontSize: 24),
-                ),
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () {
-                    setState(() {
-                      _selectedNumber = (_selectedNumber + 1).clamp(1, 10);
-                    });
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
+    if (time != null) {
+      setState(() {
+        _selectedTime = time;
+      });
+    }
+  }
 
-
+  Widget buildNumberPicker() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(Icons.remove),
+          onPressed: () {
+            setState(() {
+              _selectedNumber = (_selectedNumber - 1).clamp(0, 10);
+            });
+          },
+        ),
+        Text(
+          '$_selectedNumber',
+          style: TextStyle(fontSize: 24),
+        ),
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () {
+            setState(() {
+              _selectedNumber = (_selectedNumber + 1).clamp(0, 10);
+            });
+          },
+        ),
+      ],
+    );
+  }
 
   Future<void> signIn() async {
     try {
@@ -140,15 +189,6 @@ void _showNumberPicker() {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                TextField(
-                  controller: _textController,
-                  decoration: const InputDecoration(
-                    labelText: 'Edit',
-                  ),
-                  onChanged: (value) {
-                    setState(() {});
-                  },
-                ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _selectTime,
@@ -161,16 +201,21 @@ void _showNumberPicker() {
                     style: const TextStyle(fontSize: 18),
                   ),
                 const SizedBox(height: 16),
-               
-                ElevatedButton(
-                  onPressed: _showNumberPicker,
-                  child: const Text('SELECT NUMBER OF PILLS'),
+
+                // Use ListView.builder to create the rows dynamically
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: containerNames.length,
+                  itemBuilder: (context, index) {
+                    return Column(
+                      children: [
+                        buildContainerRow(containerNames[index]),
+                        const SizedBox(height: 16),
+                      ],
+                    );
+                  },
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Selected Number: $_selectedNumber',
-                  style: const TextStyle(fontSize: 18),
-                ),
+
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -183,6 +228,7 @@ void _showNumberPicker() {
                     ),
                     const SizedBox(width: 16),
                   ],
+
                 ),
               ],
             ),
