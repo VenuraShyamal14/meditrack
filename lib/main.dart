@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.edit),
+            icon: Icon(Icons.build),
             label: 'Edit',
           ),
           BottomNavigationBarItem(
@@ -129,8 +129,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: Icon(Icons.person),
+            label: 'Account',
           ),
         ],
       ),
@@ -163,18 +163,60 @@ class Message {
 
 
 class Screen1 extends StatelessWidget {
+  final List<String> labels = [
+    'Container 1',
+    'Container 2',
+    'Container 3',
+    'Container 4',
+    'Container 5',
+    'Container 6',
+    'Container 7',
+    'Container 8',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Screen 1'),
+        title: Text('Customize Container'),
       ),
-      body: Center(
-        child: Text('This is Screen 1'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView.builder(
+          itemCount: labels.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      labels[index],
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Enter medicine name',
+                      ),
+                      // You can add onChanged or controller to handle input.
+                      // onChanged: (value) { ... },
+                      // controller: yourController,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 }
+
 
 class Screen2 extends StatelessWidget {
   final DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
@@ -215,7 +257,7 @@ class Screen2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Screen 2'),
+        title: Text('Home'),
       ),
       body: StreamBuilder<DatabaseEvent>(
         stream: databaseReference.child('messages').onValue,
@@ -295,7 +337,7 @@ class Screen3 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Screen 3'),
+        title: Text('Account'),
       ),
       body: Center(
         child: Text('This is Screen 3'),
