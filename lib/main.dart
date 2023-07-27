@@ -223,36 +223,43 @@ class _Screen1State extends State<Screen1> {
   }
 
    @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Screen 1'),
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                for (int i = 0; i < labels.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        Text('Container ${i + 1}:'),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: controllers[i], // Use the TextEditingController
-                            decoration: InputDecoration(border: OutlineInputBorder()),
-                          ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Screen 1'),
+    ),
+    body: SingleChildScrollView(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              for (int i = 0; i < labels.length; i++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Text('Container ${i + 1}:'),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: controllers[i], // Use the TextEditingController
+                          decoration: InputDecoration(border: OutlineInputBorder()),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ElevatedButton(
-                  onPressed: () async {
+                ),
+              ElevatedButton(
+                onPressed: () async {
+                  // Check if any of the text fields is empty
+                  if (controllers.any((controller) => controller.text.isEmpty)) {
+                    // Show an error snackbar if any text field is empty
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Please enter values in all fields!')),
+                    );
+                  } else {
                     // Save the data to local storage as a single string
                     String combinedData = controllers.map((controller) => controller.text).join(',');
                     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -266,16 +273,18 @@ class _Screen1State extends State<Screen1> {
                     // Print the saved data to the console
                     String savedData = prefs.getString('container_data') ?? '';
                     print('Saved Data: $savedData');
-                  },
-                  child: Text('Save'),
-                ),
-              ],
-            ),
+                  }
+                },
+                child: Text('Save'),
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
 
 
