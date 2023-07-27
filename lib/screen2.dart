@@ -9,8 +9,7 @@ class Screen2 extends StatefulWidget {
 }
 
 class _Screen2State extends State<Screen2> {
-  final DatabaseReference databaseReference =
-      FirebaseDatabase.instance.ref();
+  final DatabaseReference databaseReference = FirebaseDatabase.instance.ref();
   List<Message> messages = [];
 
   @override
@@ -20,7 +19,6 @@ class _Screen2State extends State<Screen2> {
   }
 
   void fetchMessages() {
-
     databaseReference.child('messages').once().then((DatabaseEvent event) {
       DataSnapshot snapshot = event.snapshot;
       messages.clear();
@@ -31,11 +29,9 @@ class _Screen2State extends State<Screen2> {
         Message message = Message(
           key: key,
           text: text,
-          
         );
         messages.add(message);
       });
-      
     }).catchError((error) {
       // Handle error if fetching messages fails
       print('Error: $error');
@@ -56,12 +52,12 @@ class _Screen2State extends State<Screen2> {
             List<Message> messages = [];
 
             if (dataValues.value != null) {
-              Map<dynamic, dynamic> values = dataValues.value as Map<dynamic, dynamic>;
+              Map<dynamic, dynamic> values =
+                  dataValues.value as Map<dynamic, dynamic>;
               values.forEach((key, value) {
                 Message message = Message(
                   key: key,
                   text: value['text'],
-                  
                 );
                 messages.add(message);
               });
@@ -71,6 +67,14 @@ class _Screen2State extends State<Screen2> {
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 Message message = messages[index];
+                //deviding message to title and rest is for container pill count
+                final splited = message.text.split(',');
+                String title1 = splited[0];
+                final splitedforTime = title1.split('');
+                String hour = splitedforTime[0] + splitedforTime[1];
+                String min = splitedforTime[2] + splitedforTime[3];
+                String time = hour + ":" + min;
+
                 return InkWell(
                   onTap: () {
                     // Handle individual message tap
@@ -99,10 +103,23 @@ class _Screen2State extends State<Screen2> {
                       ],
                     ),
                     child: ListTile(
-                      contentPadding: const EdgeInsets.all(16.0), // Padding around the content
-                      title: Text(message.text),
-                      trailing: const Icon(Icons.edit), // Edit icon
-                    ),
+                      contentPadding: const EdgeInsets.all(
+                          16.0), // Padding around the content
+                      title: Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Text(
+        'Next Medication Time', // Replace with your desired subtitle text
+        style: TextStyle(fontSize: 16), // Set the font size for the subtitle
+      ),
+      Text(
+        time,
+        style: const TextStyle(fontSize: 35), // Set the font size for the title
+      ),
+    ],
+  ),
+  trailing: const Icon(Icons.edit), // Edit icon
+)
                   ),
                 );
               },

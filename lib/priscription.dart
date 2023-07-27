@@ -78,7 +78,6 @@ class _ContainerRowState extends State<ContainerRow> {
 }
 
 class _PrescriptionPageState extends State<PrescriptionPage> {
-  final TextEditingController _textController = TextEditingController();
   final databaseReference = FirebaseDatabase.instance.ref();
 
   TimeOfDay? _selectedTime;
@@ -166,7 +165,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
 
     // Combine the time and selected numbers as a single line separated by commas
 
-    String combinedData = '1$formattedTime${pickedNumbers.join("")}1';
+    String combinedData = '$formattedTime,${pickedNumbers.join(",")}';
     //int numericData = int.parse(combinedData);
     // Push the combined data to the Firebase database
 
