@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'priscription.dart';
 import 'edit_container.dart';
@@ -174,6 +175,11 @@ class Screen1 extends StatelessWidget {
     'Container 8',
   ];
 
+  final List<TextEditingController> controllers = List.generate(
+    8,
+    (index) => TextEditingController(),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,6 +205,7 @@ class Screen1 extends StatelessWidget {
                   Expanded(
                     flex: 3,
                     child: TextField(
+                      controller: controllers[index],
                       decoration: InputDecoration(
                         hintText: 'Enter medicine name',
                       ),
@@ -213,9 +220,35 @@ class Screen1 extends StatelessWidget {
           },
         ),
       ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: () async {
+              // Save the data to local storage as a single string
+              String combinedData = controllers.map((controller) => controller.text).join(',');
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('container_data', combinedData);
+
+              // Show a snackbar to indicate successful saving
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('data saved successfully!')),
+              );
+
+              // Print the saved data to the console
+              String savedData = prefs.getString('container_data') ?? '';
+              print('Saved Data: $savedData');
+            },
+            child: Text('Save'),
+          ),
+        ),
+      ),
     );
   }
 }
+
 
 
 class Screen2 extends StatelessWidget {
