@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 import 'priscription.dart';
-
 import 'message.dart';
 import 'screen1.dart';
 import 'screen2.dart';
@@ -40,9 +37,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final databaseReference = FirebaseDatabase.instance.reference();
+  final databaseReference = FirebaseDatabase.instance.ref();
 
-  late Stream<int> _ledStream;
   List<Message> messages = [];
 
 
@@ -54,16 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Screen3(),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _ledStream = databaseReference.child('test/pot_value').onValue.map((event) {
-      return event.snapshot.value as int;
-    });
-
-    fetchMessages();
-  }
-
   void fetchMessages() {
     databaseReference.child('messages').once().then((DatabaseEvent event) {
       DataSnapshot snapshot = event.snapshot;
@@ -72,16 +58,10 @@ class _MyHomePageState extends State<MyHomePage> {
           (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
       values.forEach((key, value) {
         String text = value["text"];
-        bool morning = value["morning"];
-        bool lunch = value["lunch"];
-        bool dinner = value["dinner"];
         int selectedNumber = value["selectedNumber"];
         Message message = Message(
           key: key,
           text: text,
-          morning: morning,
-          lunch: lunch,
-          dinner: dinner,
           selectedNumber: selectedNumber,
         );
         messages.add(message);
@@ -93,20 +73,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void onButton() {
-    databaseReference.child('test/led').set(1);
-  }
-
-  void offButton() {
-    databaseReference.child('test/led').set(0);
-  }
-  
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
-      floatingActionButton: FloatingActionButton.small(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
@@ -122,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
             _currentIndex = index;
           });
         },
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.build),
             label: 'Edit',

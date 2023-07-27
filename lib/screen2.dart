@@ -19,16 +19,10 @@ class Screen2 extends StatelessWidget {
           (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
       values.forEach((key, value) {
         String text = value["text"];
-        bool morning = value["morning"];
-        bool lunch = value["lunch"];
-        bool dinner = value["dinner"];
         int selectedNumber = value["selectedNumber"];
         Message message = Message(
           key: key,
           text: text,
-          morning: morning,
-          lunch: lunch,
-          dinner: dinner,
           selectedNumber: selectedNumber,
         );
         messages.add(message);
@@ -59,9 +53,6 @@ class Screen2 extends StatelessWidget {
                 Message message = Message(
                   key: key,
                   text: value['text'],
-                  morning: value['morning'],
-                  lunch: value['lunch'],
-                  dinner: value['dinner'],
                   selectedNumber: value['selectedNumber'],
                 );
                 messages.add(message);

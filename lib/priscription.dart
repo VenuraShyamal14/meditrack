@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:numberpicker/numberpicker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
-User? _user;
 
 class PrescriptionPage extends StatefulWidget {
   const PrescriptionPage({Key? key}) : super(key: key);
@@ -16,8 +14,13 @@ class PrescriptionPage extends StatefulWidget {
 
 class ContainerRow extends StatefulWidget {
   final String containerName;
+  final ValueChanged<int>
+      onSelectedNumberChanged; // Callback to notify selected number changes
 
-  ContainerRow({required this.containerName});
+  const ContainerRow({
+    required this.containerName,
+    required this.onSelectedNumberChanged,
+  });
 
   @override
   State<ContainerRow> createState() => _ContainerRowState();
@@ -26,6 +29,11 @@ class ContainerRow extends StatefulWidget {
 class _ContainerRowState extends State<ContainerRow> {
   int _selectedNumber = 0;
 
+  // Method to get the selected number
+  int getSelectedNumber() {
+    return _selectedNumber;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -33,30 +41,32 @@ class _ContainerRowState extends State<ContainerRow> {
         Expanded(
           child: Text(
             widget.containerName,
-            style: TextStyle(fontSize: 20),
+            style: const TextStyle(fontSize: 20),
           ),
         ),
-        SizedBox(width: 16),
+        const SizedBox(width: 16),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.remove),
+              icon: const Icon(Icons.remove),
               onPressed: () {
                 setState(() {
                   _selectedNumber = (_selectedNumber - 1).clamp(0, 10);
+                  widget.onSelectedNumberChanged(_selectedNumber);
                 });
               },
             ),
             Text(
               '$_selectedNumber',
-              style: TextStyle(fontSize: 24),
+              style: const TextStyle(fontSize: 24),
             ),
             IconButton(
-              icon: Icon(Icons.add),
+              icon: const Icon(Icons.add),
               onPressed: () {
                 setState(() {
                   _selectedNumber = (_selectedNumber + 1).clamp(0, 10);
+                  widget.onSelectedNumberChanged(_selectedNumber);
                 });
               },
             ),
@@ -69,55 +79,46 @@ class _ContainerRowState extends State<ContainerRow> {
 
 class _PrescriptionPageState extends State<PrescriptionPage> {
   final TextEditingController _textController = TextEditingController();
-  final databaseReference = FirebaseDatabase.instance.reference();
+  final databaseReference = FirebaseDatabase.instance.ref();
 
   TimeOfDay? _selectedTime;
-  int _selectedNumber = 0;
-
-  bool _morningSelected = false;
-  bool _lunchSelected = false;
-  bool _dinnerSelected = false;
-
   List<String> containerNames = [];
- @override
+  List<int> pickedNumbers = []; // List to store selected numbers
+
+  @override
   void initState() {
     super.initState();
     // Call the function to retrieve the stored data when the widget is initialized
     getContainerData().then((data) {
       setState(() {
         containerNames = data;
+        pickedNumbers =
+            List.filled(containerNames.length, 0); // Initialize with zeros
       });
     });
   }
-  // List of container names
-  
-// Function to retrieve the stored data or return a default list
-Future<List<String>> getContainerData() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? storedData = prefs.getString('container_data');
 
-  if (storedData != null && storedData.isNotEmpty) {
-    List<String> containerData = storedData.split(',');
-    return containerData;
-  } else {
-    // Return the default list if no data was saved
-    return [
-      'container1',
-      'container2',
-      'container3',
-      'container4',
-      'container5',
-      'container6',
-      'container7',
-      'container8',
-    ];
-  }
-}
+  // Function to retrieve the stored data or return a default list
+  Future<List<String>> getContainerData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedData = prefs.getString('container_data');
 
-
-  // Function to build each row
-  Widget buildContainerRow(String containerName) {
-    return ContainerRow(containerName: containerName);
+    if (storedData != null && storedData.isNotEmpty) {
+      List<String> containerData = storedData.split(',');
+      return containerData;
+    } else {
+      // Return the default list if no data was saved
+      return [
+        'container1',
+        'container2',
+        'container3',
+        'container4',
+        'container5',
+        'container6',
+        'container7',
+        'container8',
+      ];
+    }
   }
 
   void _selectTime() async {
@@ -130,7 +131,8 @@ Future<List<String>> getContainerData() async {
           child: child!,
         );
       },
-      initialEntryMode: TimePickerEntryMode.dial, // Set to dial for 24-hour clock
+      initialEntryMode:
+          TimePickerEntryMode.dial, // Set to dial for 24-hour clock
     );
 
     if (time != null) {
@@ -138,34 +140,6 @@ Future<List<String>> getContainerData() async {
         _selectedTime = time;
       });
     }
-  }
-
-  Widget buildNumberPicker() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(Icons.remove),
-          onPressed: () {
-            setState(() {
-              _selectedNumber = (_selectedNumber - 1).clamp(0, 10);
-            });
-          },
-        ),
-        Text(
-          '$_selectedNumber',
-          style: TextStyle(fontSize: 24),
-        ),
-        IconButton(
-          icon: Icon(Icons.add),
-          onPressed: () {
-            setState(() {
-              _selectedNumber = (_selectedNumber + 1).clamp(0, 10);
-            });
-          },
-        ),
-      ],
-    );
   }
 
   Future<void> signIn() async {
@@ -179,33 +153,28 @@ Future<List<String>> getContainerData() async {
       print('Failed to sign in: $e');
     }
   }
-  
 
   void _saveMessage() {
     signIn();
-    String newMessage = _textController.text;
-
+ 
     int? hour = _selectedTime?.hour;
-    int? minute = _selectedTime?.minute;
+int? minute = _selectedTime?.minute;
 
-    Map<String, dynamic> newMessageData = {
-      'text': newMessage,
-      'morning': _morningSelected,
-      'lunch': _lunchSelected,
-      'dinner': _dinnerSelected,
-      'selectedNumber': _selectedNumber,
-      'hour': hour,
-      'minute': minute,
-    };
+String formattedTime = hour != null && minute != null
+    ? '${hour.toString().padLeft(2, '0')}${minute.toString().padLeft(2, '0')}'
+    : '0000';
 
-    databaseReference.child('messages').push().set(newMessageData);
+    // Combine the time and selected numbers as a single line separated by commas
+  
+        String combinedData = '$formattedTime${pickedNumbers.join("")}';
+    // Push the combined data to the Firebase database
+    databaseReference.child('messages').push().set(combinedData);
 
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Container Page'),
@@ -237,7 +206,14 @@ Future<List<String>> getContainerData() async {
                   itemBuilder: (context, index) {
                     return Column(
                       children: [
-                        buildContainerRow(containerNames[index]),
+                        ContainerRow(
+                          containerName: containerNames[index],
+                          onSelectedNumberChanged: (value) {
+                            setState(() {
+                              pickedNumbers[index] = value;
+                            });
+                          },
+                        ),
                         const SizedBox(height: 16),
                       ],
                     );
@@ -256,7 +232,6 @@ Future<List<String>> getContainerData() async {
                     ),
                     const SizedBox(width: 16),
                   ],
-
                 ),
               ],
             ),
