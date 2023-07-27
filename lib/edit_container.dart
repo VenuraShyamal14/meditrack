@@ -84,7 +84,7 @@ class _ContainerRowState extends State<ContainerRow> {
 class _EditContainerState extends State<EditContainer> {
   final databaseReference = FirebaseDatabase.instance.ref();
 
-  TimeOfDay? _selectedTime;
+  TimeOfDay _selectedTime = TimeOfDay(hour: 6, minute: 0); // Set default time to 6:00 AM
   List<String> containerNames = [];
   List<int> pickedNumbers = []; // List to store selected numbers
   List<int> _selectedNumber = [0, 0, 0, 0, 0, 0, 0, 0]; // Define the _selectedNumber variable
@@ -115,11 +115,13 @@ class _EditContainerState extends State<EditContainer> {
           setState(() {
             text = values['text'] ?? false;
             String time1 = text.split(',')[0];
-            time = time1.split('')[0] +
-                time1.split('')[1] +
-                ":" +
-                time1.split('')[2] +
-                time1.split('')[3];
+
+            // Extract hour and minute from the time string
+            int hour = int.parse(time1.substring(0, 2));
+            int minute = int.parse(time1.substring(2, 4));
+
+            _selectedTime = TimeOfDay(hour: hour, minute: minute);
+
             _selectedNumber = [
               int.parse(text.split(',')[1]),
               int.parse(text.split(',')[2]),
@@ -164,15 +166,14 @@ class _EditContainerState extends State<EditContainer> {
   void _selectTime() async {
     final TimeOfDay? time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: _selectedTime,
       builder: (BuildContext context, Widget? child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
           child: child!,
         );
       },
-      initialEntryMode:
-          TimePickerEntryMode.dial, // Set to dial for 24-hour clock
+      initialEntryMode: TimePickerEntryMode.dial,
     );
 
     if (time != null) {
@@ -194,7 +195,6 @@ class _EditContainerState extends State<EditContainer> {
         : '0000';
 
     // Combine the time and selected numbers as a single line separated by commas
-
     String combinedData = '$formattedTime,${_selectedNumber.join(",")}';
     //int numericData = int.parse(combinedData);
     // Push the combined data to the Firebase database
@@ -214,7 +214,6 @@ class _EditContainerState extends State<EditContainer> {
       print('Error: $error');
     });
   }
-
   void _deleteMessage() {
     String messageKey = widget.message.key;
 
@@ -239,39 +238,21 @@ class _EditContainerState extends State<EditContainer> {
                         child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Padding(padding: const EdgeInsets.all(16.0)),
-                    Container(
-                      child: Text(
-                        'Selected Time : ',
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Wrap the Text widget inside a container or ListTile
-                    Container(
-                      child: Text(
-                        time,
-                        style: const TextStyle(fontSize: 35),
-                      ),
-                    ),
-                  ],
-                ),
-                // Add more widgets if needed
-
                 const SizedBox(height: 16),
-                ElevatedButton(
+                Text(
+                    'Medication time: ',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                if (_selectedTime != null)
+                  Text(
+                    '${_selectedTime!.format(context)}',
+                    style: const TextStyle(fontSize: 45),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
                   onPressed: _selectTime,
                   child: const Text('SELECT TIME'),
                 ),
-
-                const SizedBox(height: 16),
-                if (_selectedTime != null)
-                  Text(
-                    'New Time: ${_selectedTime!.format(context)}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
                 const SizedBox(height: 16),
                 // Use ListView.builder to create the rows dynamically
                 ListView.builder(
