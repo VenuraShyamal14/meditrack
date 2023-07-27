@@ -239,9 +239,9 @@ class _EditContainerState extends State<EditContainer> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 16),
-                Text(
+                const Text(
                     'Medication time: ',
-                    style: const TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 18),
                   ),
                 if (_selectedTime != null)
                   Text(
