@@ -226,7 +226,7 @@ class _Screen1State extends State<Screen1> {
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Text('Screen 1'),
+      title: Text('Customize Containers'),
     ),
     body: SingleChildScrollView(
       child: Center(
