@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'refill.dart';
 import 'login.dart';
+import 'qr.dart';
 
 
 final Uri _url = Uri.parse('http://notyabaya.rf.gd/index.php');
@@ -38,6 +39,22 @@ class Screen3 extends StatelessWidget {
                   },
                 ),
               ),
+              Expanded(
+                child: buildButtonWithIconAndText(
+                  icon: Icons.app_shortcut_sharp,
+                  label: 'Add Devices',
+                  description: 'Add devices to the app',
+                  onPressed: () {
+                    // Navigate to RefillScreen when Button 1 is pressed
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => QrScreen()),
+                    );
+
+                   
+                  },
+                ),
+              ),
               SizedBox(height: 16),
               Expanded(
                 child: buildButtonWithIconAndText(
@@ -48,7 +65,7 @@ class Screen3 extends StatelessWidget {
                     // Handle button 2 press
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => loginScreen()),
+                      MaterialPageRoute(builder: (context) => AuthScreen()),
                     );
                   },
                 ),

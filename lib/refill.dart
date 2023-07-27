@@ -34,7 +34,7 @@ class _RefillScreenState extends State<RefillScreen> {
 
     // Set Firebase Realtime Database settings to true
     DatabaseReference databaseReference = FirebaseDatabase.instance.ref();
-    databaseReference.child('settings/mode').set(true);
+    databaseReference.child('settings/mode').set(1);
     databaseReference.child('settings/container').set(selectedValue);
   }
 
@@ -48,7 +48,7 @@ class _RefillScreenState extends State<RefillScreen> {
     // Add your code here
     // Set Firebase Realtime Database settings to true
     DatabaseReference databaseReference = FirebaseDatabase.instance.ref();
-    databaseReference.child('settings/mode').set(false);
+    databaseReference.child('settings/mode').set(0);
   }
 
   @override
@@ -64,7 +64,7 @@ class _RefillScreenState extends State<RefillScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Select the container to refill:',
+                'Select the container to refill',
                 style: TextStyle(fontSize: 20),
               ),
               SizedBox(height: 16),

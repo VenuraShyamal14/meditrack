@@ -84,18 +84,31 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
   List<String> containerNames = [];
   List<int> pickedNumbers = []; // List to store selected numbers
 
+   // Define a variable to keep track of the next key to use
+  int nextKey = 1;
+
   @override
   void initState() {
-    super.initState();
-    // Call the function to retrieve the stored data when the widget is initialized
-    getContainerData().then((data) {
-      setState(() {
-        containerNames = data;
-        pickedNumbers =
-            List.filled(containerNames.length, 0); // Initialize with zeros
-      });
+  super.initState();
+  // Call the function to retrieve the stored data when the widget is initialized
+  getContainerData().then((data) {
+    setState(() {
+      containerNames = data;
+      pickedNumbers =
+          List.filled(containerNames.length, 0); // Initialize with zeros
     });
-  }
+  });
+
+  // Fetch the count of messages from Firebase and update nextKey accordingly
+  databaseReference.child('messages').once().then((DatabaseEvent snapshot) {
+    DataSnapshot data = snapshot.snapshot;
+    if (data.value != null) {
+      // Get the count of existing messages and increment nextKey accordingly
+      Map<dynamic, dynamic> messages = data.value as Map<dynamic, dynamic>;
+      nextKey = messages.length + 1;
+    }
+  });
+}
 
   // Function to retrieve the stored data or return a default list
   Future<List<String>> getContainerData() async {
@@ -169,11 +182,15 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
     //int numericData = int.parse(combinedData);
     // Push the combined data to the Firebase database
 
+    // Use the nextKey to create the meaningful key for Firebase
+    String firebaseKey = nextKey.toString();
+    nextKey++;
+
        Map<String, dynamic> newMessageData = {
       'text': combinedData,
     };
 
-    databaseReference.child('messages').push().set(newMessageData);
+    databaseReference.child('messages').child(firebaseKey).set(newMessageData);
     Navigator.pop(context);
   }
 
