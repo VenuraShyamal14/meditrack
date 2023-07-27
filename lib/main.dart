@@ -245,9 +245,16 @@ Widget build(BuildContext context) {
                       Expanded(
                         child: TextField(
                           controller: controllers[i], // Use the TextEditingController
-                          decoration: InputDecoration(border: OutlineInputBorder()),
+                          decoration: InputDecoration(border: OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                              icon: Icon(Icons.clear),
+                              onPressed: () {
+                                // Clear the text field when the icon is pressed
+                                controllers[i].clear();
+                              },),
                         ),
                       ),
+                      )
                     ],
                   ),
                 ),
