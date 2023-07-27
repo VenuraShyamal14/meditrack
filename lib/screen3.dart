@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
-
 import 'refill.dart';
 import 'login.dart';
 import 'qr.dart';
-
 
 final Uri _url = Uri.parse('http://notyabaya.rf.gd/index.php');
 
@@ -34,8 +31,6 @@ class Screen3 extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (context) => RefillScreen()),
                     );
-
-                   
                   },
                 ),
               ),
@@ -50,8 +45,6 @@ class Screen3 extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (context) => QrScreen()),
                     );
-
-                   
                   },
                 ),
               ),
@@ -62,11 +55,8 @@ class Screen3 extends StatelessWidget {
                   label: 'Logout',
                   description: 'Log out from your account',
                   onPressed: () {
-                    // Handle button 2 press
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AuthScreen()),
-                    );
+                    // Handle logout button press
+                    _logout(context);
                   },
                 ),
               ),
@@ -85,11 +75,39 @@ class Screen3 extends StatelessWidget {
       ),
     );
   }
-Future<void> _launchUrl() async {
-  if (!await launchUrl(_url)) {
-    throw Exception('Could not launch $_url');
+
+  Future<void> _launchUrl() async {
+    if (!await launchUrl(_url)) {
+      throw Exception('Could not launch $_url');
+    }
   }
-}
+
+  void _showLogoutSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Successfully logged out'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.black,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _logout(BuildContext context) {
+    // Perform the logout process here, which may include clearing the user session
+    // For example, if you have a 'logout' function in the 'login.dart' file:
+    logout(); // Make sure to implement the 'logout' function in 'login.dart'
+
+    // Show the logout SnackBar
+    _showLogoutSnackBar(context);
+
+    // Navigate back to the login screen after logout
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => AuthScreen()),
+    );
+  }
+
   Widget buildButtonWithIconAndText({
     required IconData icon,
     required String label,

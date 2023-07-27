@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'main.dart'; // Import the main.dart file or replace it with the correct path to your main screen.
 
 class AuthScreen extends StatefulWidget {
   @override
   _AuthScreenState createState() => _AuthScreenState();
+}
+
+// Function to perform the logout process
+Future<void> logout() async {
+  // Clear authentication tokens or session data (for example, using shared preferences)
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove('authToken'); // Remove the authentication token from shared preferences
+
+  // You can perform any other cleanup tasks here if needed.
+
+  // After logging out, you might want to navigate the user back to the login screen.
+  // This will depend on your app's navigation setup.
 }
 
 class _AuthScreenState extends State<AuthScreen> {
@@ -20,37 +35,50 @@ class _AuthScreenState extends State<AuthScreen> {
         title: Text('Authentication'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                hintText: 'Email',
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                ),
               ),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: 'Password',
+              SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                ),
               ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _signIn,
-              child: Text('Login'),
-            ),
-            ElevatedButton(
-              onPressed: _signUp,
-              child: Text('Sign Up'),
-            ),
-            ElevatedButton(
-              onPressed: _signOut,
-              child: Text('Logout'),
-            ),
-            Text(_message),
-          ],
+              SizedBox(height: 24),
+              Align(
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _signIn,
+                      child: Text('Login'),
+                    ),
+                    SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _signUp,
+                      child: Text('Sign Up'),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 24),
+              Text(
+                _message,
+                style: TextStyle(fontSize: 16, color: Colors.red),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -67,6 +95,12 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _message = 'Logged in as ${user?.email}';
       });
+
+      // Direct the user to main.dart after successful login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyApp()), // Replace MyApp with your main.dart widget.
+      );
     } catch (e) {
       setState(() {
         _message = 'Login failed: $e';
@@ -85,23 +119,15 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _message = 'Registered and logged in as ${user?.email}';
       });
+
+      // Direct the user to main.dart after successful signup
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyApp()), // Replace MyApp with your main.dart widget.
+      );
     } catch (e) {
       setState(() {
         _message = 'Sign up failed: $e';
-      });
-    }
-  }
-
-  // Logout
-  Future<void> _signOut() async {
-    try {
-      await _auth.signOut();
-      setState(() {
-        _message = 'Logged out';
-      });
-    } catch (e) {
-      setState(() {
-        _message = 'Logout failed: $e';
       });
     }
   }

@@ -85,7 +85,8 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
   List<int> pickedNumbers = []; // List to store selected numbers
 
    // Define a variable to keep track of the next key to use
-  int nextKey = 1;
+   int? nextKey; // Nullable int to store the next key
+
 
   @override
   void initState() {
@@ -99,16 +100,27 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
     });
   });
 
-  // Fetch the count of messages from Firebase and update nextKey accordingly
-  databaseReference.child('messages').once().then((DatabaseEvent snapshot) {
-    DataSnapshot data = snapshot.snapshot;
-    if (data.value != null) {
-      // Get the count of existing messages and increment nextKey accordingly
-      Map<dynamic, dynamic> messages = data.value as Map<dynamic, dynamic>;
-      nextKey = messages.length + 1;
-    }
-  });
-}
+  // Fetch the nextKey from Firebase and update the variable
+    databaseReference.child('messages').once().then((DatabaseEvent snapshot) {
+      DataSnapshot data = snapshot.snapshot;
+      if (data.value != null) {
+        Map<dynamic, dynamic> messages = data.value as Map<dynamic, dynamic>;
+        int maxKey = 0;
+        messages.keys.forEach((key) {
+          int? parsedKey = int.tryParse(key);
+          if (parsedKey != null && parsedKey > maxKey) {
+            maxKey = parsedKey;
+          }
+        });
+        nextKey = maxKey + 1;
+      } else {
+        // If no messages in Firebase, start with 1
+        nextKey = 1;
+      }
+    });
+  }
+
+
 
   // Function to retrieve the stored data or return a default list
   Future<List<String>> getContainerData() async {
@@ -182,18 +194,24 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
     //int numericData = int.parse(combinedData);
     // Push the combined data to the Firebase database
 
-    // Use the nextKey to create the meaningful key for Firebase
-    String firebaseKey = nextKey.toString();
-    nextKey++;
+    /// Use the nextKey to create the meaningful key for Firebase
+    if (nextKey != null) {
+      int incrementedKey = nextKey! + 1; // Increment nextKey for the next message
+      nextKey = incrementedKey;
 
-       Map<String, dynamic> newMessageData = {
-      'text': combinedData,
-    };
+      String firebaseKey = incrementedKey.toString();
 
-    databaseReference.child('messages').child(firebaseKey).set(newMessageData);
-    Navigator.pop(context);
+      Map<String, dynamic> newMessageData = {
+        'text': combinedData,
+      };
+
+      databaseReference.child('messages').child(firebaseKey).set(newMessageData);
+      Navigator.pop(context);
+    } else {
+      // Handle the case where nextKey is null (error condition)
+      print('Error: nextKey is null.');
+    }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
