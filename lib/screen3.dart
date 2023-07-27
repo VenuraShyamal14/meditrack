@@ -1,4 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+
+
+import 'refill.dart';
+import 'login.dart';
+
+
+final Uri _url = Uri.parse('http://notyabaya.rf.gd/index.php');
 
 class Screen3 extends StatelessWidget {
   @override
@@ -19,7 +28,13 @@ class Screen3 extends StatelessWidget {
                   label: 'Refill',
                   description: 'Refill your medication',
                   onPressed: () {
-                    // Handle button 1 press
+                    // Navigate to RefillScreen when Button 1 is pressed
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RefillScreen()),
+                    );
+
+                   
                   },
                 ),
               ),
@@ -31,6 +46,10 @@ class Screen3 extends StatelessWidget {
                   description: 'Log out from your account',
                   onPressed: () {
                     // Handle button 2 press
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => loginScreen()),
+                    );
                   },
                 ),
               ),
@@ -40,9 +59,7 @@ class Screen3 extends StatelessWidget {
                   icon: Icons.help,
                   label: 'Help',
                   description: 'Get help and support',
-                  onPressed: () {
-                    // Handle button 3 press
-                  },
+                  onPressed: _launchUrl,
                 ),
               ),
             ],
@@ -51,7 +68,11 @@ class Screen3 extends StatelessWidget {
       ),
     );
   }
-
+Future<void> _launchUrl() async {
+  if (!await launchUrl(_url)) {
+    throw Exception('Could not launch $_url');
+  }
+}
   Widget buildButtonWithIconAndText({
     required IconData icon,
     required String label,
