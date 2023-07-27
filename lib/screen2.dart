@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'message.dart';
 import 'edit_container.dart';
@@ -11,7 +10,7 @@ class Screen2 extends StatefulWidget {
 
 class _Screen2State extends State<Screen2> {
   final DatabaseReference databaseReference =
-      FirebaseDatabase.instance.reference();
+      FirebaseDatabase.instance.ref();
   List<Message> messages = [];
 
   @override
@@ -21,8 +20,6 @@ class _Screen2State extends State<Screen2> {
   }
 
   void fetchMessages() {
-    // Your existing fetchMessages() function
-    // ...
 
     databaseReference.child('messages').once().then((DatabaseEvent event) {
       DataSnapshot snapshot = event.snapshot;
@@ -31,7 +28,6 @@ class _Screen2State extends State<Screen2> {
           (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
       values.forEach((key, value) {
         String text = value["text"];
-        int selectedNumber = value["selectedNumber"];
         Message message = Message(
           key: key,
           text: text,
@@ -112,7 +108,7 @@ class _Screen2State extends State<Screen2> {
               },
             );
           } else {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
