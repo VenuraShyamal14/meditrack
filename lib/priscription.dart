@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 User? _user;
@@ -77,17 +78,42 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
   bool _lunchSelected = false;
   bool _dinnerSelected = false;
 
+  List<String> containerNames = [];
+ @override
+  void initState() {
+    super.initState();
+    // Call the function to retrieve the stored data when the widget is initialized
+    getContainerData().then((data) {
+      setState(() {
+        containerNames = data;
+      });
+    });
+  }
   // List of container names
-  List<String> containerNames = [
-    'container1',
-    'container2',
-    'container3',
-    'container4',
-    'container5',
-    'container6',
-    'container7',
-    'container8',
-  ];
+  
+// Function to retrieve the stored data or return a default list
+Future<List<String>> getContainerData() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? storedData = prefs.getString('container_data');
+
+  if (storedData != null && storedData.isNotEmpty) {
+    List<String> containerData = storedData.split(',');
+    return containerData;
+  } else {
+    // Return the default list if no data was saved
+    return [
+      'container1',
+      'container2',
+      'container3',
+      'container4',
+      'container5',
+      'container6',
+      'container7',
+      'container8',
+    ];
+  }
+}
+
 
   // Function to build each row
   Widget buildContainerRow(String containerName) {
@@ -153,6 +179,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
       print('Failed to sign in: $e');
     }
   }
+  
 
   void _saveMessage() {
     signIn();
@@ -178,6 +205,7 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Container Page'),
