@@ -19,12 +19,13 @@ class EditContainer extends StatefulWidget {
 
 class ContainerRow extends StatefulWidget {
   final String containerName;
-  final ValueChanged<int>
-      onSelectedNumberChanged; // Callback to notify selected number changes
+  final ValueChanged<int> onSelectedNumberChanged; // Callback to notify selected number changes
+  final int selectedNumber; // Add selectedNumber property to hold the current value
 
   const ContainerRow({
     required this.containerName,
     required this.onSelectedNumberChanged,
+    required this.selectedNumber, // Pass the selectedNumber value here
   });
 
   @override
@@ -32,11 +33,9 @@ class ContainerRow extends StatefulWidget {
 }
 
 class _ContainerRowState extends State<ContainerRow> {
-  int _selectedNumber = 0;
-
   // Method to get the selected number
   int getSelectedNumber() {
-    return _selectedNumber;
+    return widget.selectedNumber;
   }
 
   @override
@@ -57,21 +56,21 @@ class _ContainerRowState extends State<ContainerRow> {
               icon: const Icon(Icons.remove),
               onPressed: () {
                 setState(() {
-                  _selectedNumber = (_selectedNumber - 1).clamp(0, 10);
-                  widget.onSelectedNumberChanged(_selectedNumber);
+                  int newValue = (widget.selectedNumber - 1).clamp(0, 10);
+                  widget.onSelectedNumberChanged(newValue);
                 });
               },
             ),
             Text(
-              '$_selectedNumber',
+              '${widget.selectedNumber}',
               style: const TextStyle(fontSize: 24),
             ),
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () {
                 setState(() {
-                  _selectedNumber = (_selectedNumber + 1).clamp(0, 10);
-                  widget.onSelectedNumberChanged(_selectedNumber);
+                  int newValue = (widget.selectedNumber + 1).clamp(0, 10);
+                  widget.onSelectedNumberChanged(newValue);
                 });
               },
             ),
@@ -82,17 +81,16 @@ class _ContainerRowState extends State<ContainerRow> {
   }
 }
 
-
 class _EditContainerState extends State<EditContainer> {
   final databaseReference = FirebaseDatabase.instance.ref();
 
   TimeOfDay? _selectedTime;
   List<String> containerNames = [];
   List<int> pickedNumbers = []; // List to store selected numbers
-  int _selectedNumber = 1; // Define the _selectedNumber variable
+  List<int> _selectedNumber = [0, 0, 0, 0, 0, 0, 0, 0]; // Define the _selectedNumber variable
   String text = 'a';
   String time = 'a';
-  
+
   @override
   void initState() {
     super.initState();
@@ -100,8 +98,7 @@ class _EditContainerState extends State<EditContainer> {
     getContainerData().then((data) {
       setState(() {
         containerNames = data;
-        pickedNumbers =
-            List.filled(containerNames.length, 0); // Initialize with zeros
+        pickedNumbers = List.filled(containerNames.length, 0); // Initialize with zeros
       });
     });
 
@@ -118,8 +115,21 @@ class _EditContainerState extends State<EditContainer> {
           setState(() {
             text = values['text'] ?? false;
             String time1 = text.split(',')[0];
-            time = time1.split('')[0] + time1.split('')[1] + ":" +time1.split('')[2] +time1.split('')[3];
-
+            time = time1.split('')[0] +
+                time1.split('')[1] +
+                ":" +
+                time1.split('')[2] +
+                time1.split('')[3];
+            _selectedNumber = [
+              int.parse(text.split(',')[1]),
+              int.parse(text.split(',')[2]),
+              int.parse(text.split(',')[3]),
+              int.parse(text.split(',')[4]),
+              int.parse(text.split(',')[5]),
+              int.parse(text.split(',')[6]),
+              int.parse(text.split(',')[7]),
+              int.parse(text.split(',')[8]),
+            ];
           });
         }
       }
@@ -151,7 +161,7 @@ class _EditContainerState extends State<EditContainer> {
     }
   }
 
-   void _selectTime() async {
+  void _selectTime() async {
     final TimeOfDay? time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -172,7 +182,6 @@ class _EditContainerState extends State<EditContainer> {
     }
   }
 
-
   void _updateMessage() {
     //String updatedMessage = _textController.text;
     String messageKey = widget.message.key;
@@ -186,10 +195,10 @@ class _EditContainerState extends State<EditContainer> {
 
     // Combine the time and selected numbers as a single line separated by commas
 
-    String combinedData = '$formattedTime,${pickedNumbers.join(",")}';
+    String combinedData = '$formattedTime,${_selectedNumber.join(",")}';
     //int numericData = int.parse(combinedData);
     // Push the combined data to the Firebase database
- 
+
     Map<String, dynamic> updatedData = {
       //'text': updatedMessage,
       'text': combinedData,
@@ -216,7 +225,6 @@ class _EditContainerState extends State<EditContainer> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -224,11 +232,11 @@ class _EditContainerState extends State<EditContainer> {
         title: const Text('Edit Container Page'),
       ),
       body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0) ,
+        padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
+                        child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
@@ -236,16 +244,13 @@ class _EditContainerState extends State<EditContainer> {
                     Padding(padding: const EdgeInsets.all(16.0)),
                     Container(
                       child: Text(
-                        
                         'Selected Time : ',
                         style: const TextStyle(fontSize: 20),
                       ),
                     ),
-
                     const SizedBox(width: 16),
                     // Wrap the Text widget inside a container or ListTile
                     Container(
-
                       child: Text(
                         time,
                         style: const TextStyle(fontSize: 35),
@@ -279,9 +284,10 @@ class _EditContainerState extends State<EditContainer> {
                           containerName: containerNames[index],
                           onSelectedNumberChanged: (value) {
                             setState(() {
-                              pickedNumbers[index] = value;
+                              _selectedNumber[index] = value;
                             });
                           },
+                          selectedNumber: _selectedNumber[index], // Pass the current value here
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -314,3 +320,5 @@ class _EditContainerState extends State<EditContainer> {
     );
   }
 }
+
+           
