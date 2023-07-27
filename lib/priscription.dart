@@ -173,23 +173,15 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
       'text': combinedData,
     };
 
-
- 
     databaseReference.child('messages').push().set(newMessageData);
-
     Navigator.pop(context);
-
-
-
- 
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Container Page'),
+        title: const Text('Add Medication'),
       ),
       body: SingleChildScrollView(
         child: Center(

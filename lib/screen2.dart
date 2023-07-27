@@ -108,7 +108,7 @@ class _Screen2State extends State<Screen2> {
                       title: Column(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      Text(
+      const Text(
         'Next Medication Time', // Replace with your desired subtitle text
         style: TextStyle(fontSize: 16), // Set the font size for the subtitle
       ),
