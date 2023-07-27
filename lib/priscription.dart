@@ -156,19 +156,20 @@ class _PrescriptionPageState extends State<PrescriptionPage> {
 
   void _saveMessage() {
     signIn();
- 
-    int? hour = _selectedTime?.hour;
-int? minute = _selectedTime?.minute;
 
-String formattedTime = hour != null && minute != null
-    ? '${hour.toString().padLeft(2, '0')}${minute.toString().padLeft(2, '0')}'
-    : '0000';
+    int? hour = _selectedTime?.hour;
+    int? minute = _selectedTime?.minute;
+
+    String formattedTime = hour != null && minute != null
+        ? '${hour.toString().padLeft(2, '0')}${minute.toString().padLeft(2, '0')}'
+        : '0000';
 
     // Combine the time and selected numbers as a single line separated by commas
-  
-        String combinedData = '$formattedTime${pickedNumbers.join("")}';
+
+    String combinedData = '1$formattedTime${pickedNumbers.join("")}1';
+    int numericData = int.parse(combinedData);
     // Push the combined data to the Firebase database
-    databaseReference.child('messages').push().set(combinedData);
+    databaseReference.child('messages').push().set(numericData);
 
     Navigator.pop(context);
   }
