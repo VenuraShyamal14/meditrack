@@ -4,10 +4,22 @@ import 'package:firebase_database/firebase_database.dart';
 import 'message.dart';
 import 'edit_container.dart';
 
+class Screen2 extends StatefulWidget {
+  @override
+  _Screen2State createState() => _Screen2State();
+}
 
-class Screen2 extends StatelessWidget {
-  final DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
+class _Screen2State extends State<Screen2> {
+  final DatabaseReference databaseReference =
+      FirebaseDatabase.instance.reference();
   List<Message> messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMessages();
+  }
+
   void fetchMessages() {
     // Your existing fetchMessages() function
     // ...
@@ -23,7 +35,7 @@ class Screen2 extends StatelessWidget {
         Message message = Message(
           key: key,
           text: text,
-          selectedNumber: selectedNumber,
+          
         );
         messages.add(message);
       });
@@ -53,7 +65,7 @@ class Screen2 extends StatelessWidget {
                 Message message = Message(
                   key: key,
                   text: value['text'],
-                  selectedNumber: value['selectedNumber'],
+                  
                 );
                 messages.add(message);
               });

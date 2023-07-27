@@ -50,29 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Screen3(),
   ];
 
-  void fetchMessages() {
-    databaseReference.child('messages').once().then((DatabaseEvent event) {
-      DataSnapshot snapshot = event.snapshot;
-      messages.clear();
-      Map<dynamic, dynamic> values =
-          (snapshot.value as Map<dynamic, dynamic>).cast<dynamic, dynamic>();
-      values.forEach((key, value) {
-        String text = value["text"];
-        int selectedNumber = value["selectedNumber"];
-        Message message = Message(
-          key: key,
-          text: text,
-          selectedNumber: selectedNumber,
-        );
-        messages.add(message);
-      });
-      setState(() {});
-    }).catchError((error) {
-      // Handle error if fetching messages fails
-      print('Error: $error');
-    });
-  }
-
   
   @override
   Widget build(BuildContext context) {

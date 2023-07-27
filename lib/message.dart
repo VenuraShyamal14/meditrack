@@ -1,13 +1,7 @@
 class Message {
+  String key;
+  String text; // Change the type to String
+  
 
-  final String key;
-  final String text;
-
-  final int selectedNumber;
-
-  Message({
-    required this.key,
-    required this.text,
-    required this.selectedNumber,
-  });
+  Message({required this.key, required this.text});
 }
