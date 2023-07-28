@@ -95,7 +95,9 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _message = 'Logged in as ${user?.email}';
       });
-
+      // Set the isLoggedIn shared preference value to true on successful login
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
       // Direct the user to main.dart after successful login
       Navigator.pushReplacement(
         context,
@@ -119,7 +121,9 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _message = 'Registered and logged in as ${user?.email}';
       });
-
+      // Set the isLoggedIn shared preference value to true on successful signup
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
       // Direct the user to main.dart after successful signup
       Navigator.pushReplacement(
         context,
